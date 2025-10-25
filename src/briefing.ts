@@ -150,15 +150,15 @@ export async function generateBrief(
   console.log('Analyzing clusters...');
   const clusterAnalyses: ClusterAnalysis[] = [];
 
-  for (let i = 0; i < clusterGroups.length; i++) {
-    const clusterArticles = clusterGroups[i];
+  for (let index = 0; index < clusterGroups.length; index++) {
+    const clusterArticles = clusterGroups[index];
 
     if (clusterArticles.length === 0) continue;
 
     const analysis = await analyzeCluster(
       clusterArticles,
       feedProfile,
-      i,
+      index,
       options.customPrompts?.clusterAnalysis
     );
 

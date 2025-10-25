@@ -10,14 +10,12 @@ export interface PromptVariables {
   cluster_analyses_text?: string;
 }
 
-// Embedding Response Interface
 export interface EmbeddingResponse {
   data: Array<{
     embedding: number[];
   }>;
 }
 
-// Chat Completion Response Interface
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -41,7 +39,6 @@ export interface NewsCluster {
   topics: string[];
 }
 
-// Processing Statistics Interface
 export interface ProcessingStats {
   feedProfile: string;
   articlesProcessed: number;

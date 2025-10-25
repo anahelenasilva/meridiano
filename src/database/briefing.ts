@@ -1,5 +1,5 @@
 import { db } from ".";
-import { GetBriefByIdResult } from "../types/briefing";
+import { BriefsMetadata, GetBriefByIdResult, ProcessingStatsResult } from "../types/briefing";
 import { FeedProfile } from "../types/feed";
 
 export function saveBrief(
@@ -29,12 +29,7 @@ export function saveBrief(
   });
 }
 
-
-export function getAllBriefsMetadata(feedProfile?: FeedProfile): Promise<Array<{
-  id: number;
-  generated_at: Date;
-  feed_profile: string;
-}>> {
+export function getAllBriefsMetadata(feedProfile?: FeedProfile): Promise<BriefsMetadata[]> {
   return new Promise((resolve, reject) => {
     if (!db) {
       reject(new Error('Database not initialized'));
@@ -91,5 +86,52 @@ export function getBriefById(briefId: number): Promise<GetBriefByIdResult | null
         }
       }
     );
+  });
+}
+
+export function getStats(feedProfile: FeedProfile): Promise<ProcessingStatsResult> {
+  return new Promise((resolve, reject) => {
+    const queries = [
+      'SELECT COUNT(*) as count FROM articles WHERE feed_profile = ?',
+      'SELECT COUNT(*) as count FROM articles WHERE feed_profile = ? AND processed_content IS NOT NULL',
+      'SELECT COUNT(*) as count FROM articles WHERE feed_profile = ? AND impact_rating IS NOT NULL',
+      'SELECT AVG(impact_rating) as avg FROM articles WHERE feed_profile = ? AND impact_rating IS NOT NULL',
+    ];
+
+    let results: any[] = [];
+    let completed = 0;
+
+    queries.forEach((query, index) => {
+      if (!db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+
+      db.get(query, [feedProfile], (err, row: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        results[index] = row;
+        completed++;
+
+        if (completed === queries.length) {
+          const total = results[0].count;
+          const processed = results[1].count;
+          const rated = results[2].count;
+          const averageRating = results[3].avg;
+
+          resolve({
+            total,
+            processed,
+            rated,
+            unprocessed: total - processed,
+            unrated: processed - rated,
+            averageRating: averageRating ? Math.round(averageRating * 100) / 100 : undefined,
+          });
+        }
+      });
+    });
   });
 }

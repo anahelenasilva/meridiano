@@ -1,3 +1,4 @@
+import { CountTotalArticlesInput, PaginatedArticleInput } from 'src/types/article';
 import { db } from '.';
 import { FeedProfile } from '../types/feed';
 import { DBArticle } from '../types/scrapper';
@@ -187,17 +188,14 @@ export function getArticlesForBriefing(
   });
 }
 
-export function deleteArticles(
-): Promise<void> {
+export function deleteArticles(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (!db) {
       reject(new Error('Database not initialized'));
       return;
     }
 
-    const stmt = db.prepare(`
-      DELETE FROM articles
-    `);
+    const stmt = db.prepare(`DELETE FROM articles`);
 
     stmt.run(
       function (err) {
@@ -366,16 +364,7 @@ export function getArticleById(articleId: number): Promise<DBArticle | null> {
   });
 }
 
-export function getArticlesPaginated(options: {
-  page?: number;
-  perPage?: number;
-  sortBy?: string;
-  direction?: 'asc' | 'desc';
-  feedProfile?: string;
-  searchTerm?: string;
-  startDate?: string;
-  endDate?: string;
-}): Promise<DBArticle[]> {
+export function getArticlesPaginated(options: PaginatedArticleInput): Promise<DBArticle[]> {
   return new Promise((resolve, reject) => {
     if (!db) {
       reject(new Error('Database not initialized'));
@@ -403,7 +392,6 @@ export function getArticlesPaginated(options: {
     `;
     const params: any[] = [];
 
-    // Add filters
     if (feedProfile) {
       query += ' AND feed_profile = ?';
       params.push(feedProfile);
@@ -425,13 +413,11 @@ export function getArticlesPaginated(options: {
       params.push(endDate);
     }
 
-    // Add sorting
     const validSortColumns = ['published_date', 'title', 'impact_rating', 'created_at'];
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'published_date';
     const sortDirection = direction === 'asc' ? 'ASC' : 'DESC';
     query += ` ORDER BY ${sortColumn} ${sortDirection}`;
 
-    // Add pagination
     const offset = (page - 1) * perPage;
     query += ' LIMIT ? OFFSET ?';
     params.push(perPage, offset);
@@ -447,12 +433,7 @@ export function getArticlesPaginated(options: {
   });
 }
 
-export function countTotalArticles(options: {
-  feedProfile?: string;
-  searchTerm?: string;
-  startDate?: string;
-  endDate?: string;
-}): Promise<number> {
+export function countTotalArticles(options: CountTotalArticlesInput): Promise<number> {
   return new Promise((resolve, reject) => {
     if (!db) {
       reject(new Error('Database not initialized'));
@@ -464,7 +445,6 @@ export function countTotalArticles(options: {
     let query = 'SELECT COUNT(*) as count FROM articles WHERE 1=1';
     const params: any[] = [];
 
-    // Add filters
     if (feedProfile) {
       query += ' AND feed_profile = ?';
       params.push(feedProfile);
@@ -504,7 +484,6 @@ export function getRelatedArticles(articleId: number, limit: number = 5): Promis
       return;
     }
 
-    // First get the original article to find related ones
     const getOriginalQuery = `
       SELECT feed_profile, published_date
       FROM articles
@@ -549,5 +528,30 @@ export function getRelatedArticles(articleId: number, limit: number = 5): Promis
         resolve(rows || []);
       });
     });
+  });
+}
+
+export async function getArticlesByFilter(whereClause: string, params: any[], batchSize: number): Promise<DBArticle[]> {
+  return await new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not initialized'));
+      return;
+    }
+
+    db.all(
+      `SELECT * FROM articles WHERE ${whereClause} ORDER BY published_date DESC LIMIT ?`,
+      [...params, batchSize],
+      (err, rows: any[]) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows.map(row => ({
+            ...row,
+            published_date: new Date(row.published_date),
+            created_at: new Date(row.created_at),
+          })));
+        }
+      }
+    );
   });
 }

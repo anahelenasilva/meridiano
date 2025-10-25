@@ -1,9 +1,10 @@
 import { callDeepseekChat, getEmbedding } from './apiClients';
 import { isValidImpactRating } from './configs/config';
 import { configManager } from './configs/configManager';
-import * as database from './database';
-import { getUnprocessedArticles, getUnratedArticles, updateArticleProcessing, updateArticleRating } from './database/articles';
-import { ImpactRating, ProcessingStats } from './types/ai';
+import { getArticlesByFilter, getUnprocessedArticles, getUnratedArticles, updateArticleProcessing, updateArticleRating } from './database/articles';
+import { getStats } from './database/briefing';
+import { ProcessingStats } from './types/ai';
+import { ProcessingStatsResult } from './types/briefing';
 import { FeedProfile } from './types/feed';
 import { DBArticle } from './types/scrapper';
 
@@ -162,120 +163,8 @@ export async function rateArticles(
   return stats;
 }
 
-export async function processSingleArticle(articleId: number): Promise<{
-  success: boolean;
-  summary?: string;
-  rating?: ImpactRating;
-  error?: string;
-}> {
-  try {
-    const db = database.getDbConnection();
-    const article: DBArticle = await new Promise((resolve, reject) => {
-      db.get('SELECT * FROM articles WHERE id = ?', [articleId], (err, row: any) => {
-        if (err) reject(err);
-        else if (!row) reject(new Error('Article not found'));
-        else resolve({
-          ...row,
-          published_date: new Date(row.published_date),
-          created_at: new Date(row.created_at),
-        });
-      });
-    });
-
-    const summaryPrompt = configManager.getArticleSummaryPrompt(
-      article.raw_content.substring(0, 4000)
-    );
-
-    const summary = await callDeepseekChat(summaryPrompt);
-    if (!summary) {
-      return { success: false, error: 'Failed to generate summary' };
-    }
-
-    const finalSummary = `${summary}\n\nSource: [${article.title}](${article.url})`;
-
-    const embedding = await getEmbedding(finalSummary);
-    if (!embedding) {
-      return { success: false, error: 'Failed to generate embedding' };
-    }
-
-    await updateArticleProcessing(article.id, finalSummary, embedding);
-
-    const ratingPrompt = configManager.getImpactRatingPrompt(finalSummary);
-    const ratingResponse = await callDeepseekChat(ratingPrompt);
-
-    let rating: ImpactRating | undefined;
-    if (ratingResponse) {
-      const scoreMatch = ratingResponse.trim().match(/\d+/);
-      if (scoreMatch) {
-        const score = parseInt(scoreMatch[0], 10);
-        if (isValidImpactRating(score)) {
-          await updateArticleRating(article.id, score);
-          rating = score;
-        }
-      }
-    }
-
-    return {
-      success: true,
-      summary: finalSummary,
-      rating,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
-export async function getProcessingStats(feedProfile: FeedProfile): Promise<{
-  total: number;
-  processed: number;
-  rated: number;
-  unprocessed: number;
-  unrated: number;
-  averageRating?: number;
-}> {
-  return new Promise((resolve, reject) => {
-    const db = database.getDbConnection();
-
-    const queries = [
-      'SELECT COUNT(*) as count FROM articles WHERE feed_profile = ?',
-      'SELECT COUNT(*) as count FROM articles WHERE feed_profile = ? AND processed_content IS NOT NULL',
-      'SELECT COUNT(*) as count FROM articles WHERE feed_profile = ? AND impact_rating IS NOT NULL',
-      'SELECT AVG(impact_rating) as avg FROM articles WHERE feed_profile = ? AND impact_rating IS NOT NULL',
-    ];
-
-    let results: any[] = [];
-    let completed = 0;
-
-    queries.forEach((query, index) => {
-      db.get(query, [feedProfile], (err, row: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        results[index] = row;
-        completed++;
-
-        if (completed === queries.length) {
-          const total = results[0].count;
-          const processed = results[1].count;
-          const rated = results[2].count;
-          const averageRating = results[3].avg;
-
-          resolve({
-            total,
-            processed,
-            rated,
-            unprocessed: total - processed,
-            unrated: processed - rated,
-            averageRating: averageRating ? Math.round(averageRating * 100) / 100 : undefined,
-          });
-        }
-      });
-    });
-  });
+export async function getProcessingStats(feedProfile: FeedProfile): Promise<ProcessingStatsResult> {
+  return await getStats(feedProfile);
 }
 
 export async function reprocessArticles(
@@ -313,24 +202,7 @@ export async function reprocessArticles(
     return stats;
   }
 
-  const articles: DBArticle[] = await new Promise((resolve, reject) => {
-    const db = database.getDbConnection();
-    db.all(
-      `SELECT * FROM articles WHERE ${whereClause} ORDER BY published_date DESC LIMIT ?`,
-      [...params, batchSize],
-      (err, rows: any[]) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows.map(row => ({
-            ...row,
-            published_date: new Date(row.published_date),
-            created_at: new Date(row.created_at),
-          })));
-        }
-      }
-    );
-  });
+  const articles: DBArticle[] = await getArticlesByFilter(whereClause, params, batchSize);
 
   console.log(`Reprocessing ${articles.length} articles...`);
 

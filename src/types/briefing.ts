@@ -64,3 +64,18 @@ export interface GetBriefByIdResult {
   generated_at: Date;
   feed_profile: string;
 }
+
+export interface ProcessingStatsResult {
+  total: number;
+  processed: number;
+  rated: number;
+  unprocessed: number;
+  unrated: number;
+  averageRating?: number;
+}
+
+export interface BriefsMetadata {
+  id: number;
+  generated_at: Date;
+  feed_profile: string;
+}
