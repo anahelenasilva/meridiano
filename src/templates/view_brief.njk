@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Briefing - {{ generation_time }} | Meridiano</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="navigation">
+             <a href="/">« View All Briefings</a>
+             <span style="margin: 0 10px;">|</span>
+             <a href="/articles">View Stored Articles »</a>
+        </div>
+
+        <h1>Intelligence Brief</h1>
+        <p class="timestamp">Generated: {{ generation_time }} (ID: {{ brief_id }})</p>
+        <hr>
+        <div class="brief-content">
+            {{ brief_content | safe }}
+        </div>
+    </div>
+</body>
+</html>

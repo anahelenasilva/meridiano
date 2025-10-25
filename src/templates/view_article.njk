@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{ article.title }} - Meridiano</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="navigation">
+                <a href="/?feed_profile={{ article.feed_profile }}">« View Briefings List</a>
+                <a href="/articles?feed_profile={{ article.feed_profile }}">« Back to Articles</a>
+            </div>
+
+            <article class="article-detail">
+                <header class="article-header">
+                    <h1 class="article-title">{{ article.title }}</h1>
+
+                    <div class="article-meta">
+                        <div class="meta-row">
+                            <span class="article-date">{{ article.published_date | dateformat('DD/MM/yyyy HH:mm') }}</span>
+                            <span class="profile-badge">{{ article.feed_profile }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="article-source">Source: {{ article.feed_source }}</span>
+                            {% if article.impact_rating %}
+                                <span class="impact-rating impact-{{ article.impact_rating }}">Impact Rating: {{ article.impact_rating }}/10</span>
+                            {% else %}
+                                <span class="impact-rating impact-unknown">Impact Rating: Not Rated</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </header>
+
+                {% if article.image_url %}
+                    <div class="article-image-container">
+                        <img src="{{ article.image_url }}" alt="Image for {{ article.title }}" class="article-image" onerror="this.style.display='none';">
+                    </div>
+                {% endif %}
+
+                <div class="article-content">
+                    {% if article.processed_content %}
+                        <div class="article-summary">
+                            <h3>AI Summary</h3>
+                            {{ article.processed_content_html | safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if article.content %}
+                        <div class="article-full-content">
+                            <h3>Full Content</h3>
+                            <div class="full-content">
+                                {{ article.content_html | safe }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="article-actions">
+                    <a href="{{ article.url }}" target="_blank" class="btn btn-primary">View Original Article ↗</a>
+                    {% if related_articles %}
+                        <button onclick="toggleRelatedArticles()" class="btn btn-secondary">View Related Articles ({{ related_articles|length }})</button>
+                    {% endif %}
+                </div>
+
+                {% if related_articles %}
+                    <div id="related-articles" class="related-articles" style="display: none;">
+                        <h3>Related Articles</h3>
+                        <div class="related-articles-grid">
+                            {% for related in related_articles %}
+                                <div class="related-article-card">
+                                    {% if related.image_url %}
+                                        <div class="related-article-image">
+                                            <a href="/article/{{ related.id }}">
+                                                <img src="{{ related.image_url }}" alt="Image for {{ related.title }}" onerror="this.parentElement.innerHTML='<div class=\"image-placeholder\">No Image</div>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <div class="related-article-content">
+                                        <h4 class="related-article-title">
+                                            <a href="/article/{{ related.id }}">{{ related.title }}</a>
+                                        </h4>
+                                        <div class="related-article-meta">
+                                            <span class="related-article-date">{{ related.published_date | dateformat('DD/MM/yyyy HH:mm') }}</span>
+                                            <span class="related-article-source">{{ related.feed_source }}</span>
+                                        </div>
+                                        {% if related.processed_content %}
+                                            <div class="related-article-summary">
+                                                {{ related.processed_content | truncate(200) }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Article details panel -->
+                <div class="article-details">
+                    <button onclick="toggleDetails()" class="btn btn-secondary">Toggle Article Details</button>
+                    <div id="article-details-content" class="details-content" style="display: none;">
+                        <h3>Technical Details</h3>
+                        <table class="details-table">
+                            <tr>
+                                <td><strong>Article ID:</strong></td>
+                                <td>{{ article.id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>URL:</strong></td>
+                                <td><a href="{{ article.url }}" target="_blank">{{ article.url }}</a></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Published Date:</strong></td>
+                                <td>{{ article.published_date | dateformat('DD/MM/yyyy HH:mm:ss') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ article.created_at | dateformat('DD/MM/yyyy HH:mm:ss') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Feed Profile:</strong></td>
+                                <td>{{ article.feed_profile }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Feed Source:</strong></td>
+                                <td>{{ article.feed_source }}</td>
+                            </tr>
+                            {% if article.impact_rating %}
+                                <tr>
+                                    <td><strong>Impact Rating:</strong></td>
+                                    <td>{{ article.impact_rating }}/10</td>
+                                </tr>
+                            {% endif %}
+                            {% if article.image_url %}
+                                <tr>
+                                    <td><strong>Image URL:</strong></td>
+                                    <td><a href="{{ article.image_url }}" target="_blank">{{ article.image_url }}</a></td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Content Length:</strong></td>
+                                <td>{{ article.content|length if article.content else 0 }} characters</td>
+                            </tr>
+                            {% if article.processed_content %}
+                                <tr>
+                                    <td><strong>Summary Length:</strong></td>
+                                    <td>{{ article.processed_content|length }} characters</td>
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <script>
+            function toggleRelatedArticles() {
+                const content = document.getElementById('related-articles');
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            }
+
+            function toggleDetails() {
+                const content = document.getElementById('article-details-content');
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                } else {
+                    content.style.display = 'none';
+                }
+            }
+        </script>
+    </body>
+</html>

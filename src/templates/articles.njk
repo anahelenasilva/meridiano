@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Articles
+            {% if current_feed_profile %}[{{ current_feed_profile }}]{% endif %}
+            {% if current_search_term %}| Search: {{ current_search_term }}{% endif %}
+        (Page {{ page }}) - Meridiano</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="navigation">
+                <a href="/?feed_profile={{ current_feed_profile }}">« View Briefings List</a>
+            </div>
+            <h1>
+                Articles
+                {% if current_feed_profile %}<span class="profile-badge">{{ current_feed_profile }}</span>{% endif %}
+            </h1>
+            {% if total_articles > 0 %}
+                <p>
+                    Showing articles {{ (page - 1) * per_page + 1 }} - {{ [page * per_page, total_articles] | min }} of {{ total_articles }} total (matching filters).
+                </p>
+            {% else %}
+                <p>No articles found matching the current filters.</p>
+            {% endif %}
+            <form method="GET" action="/articles" class="filter-sort-form">
+                <input type="hidden" name="sort_by" value="{{ current_sort_by }}">
+                <input type="hidden" name="direction" value="{{ current_direction }}">
+                <input type="hidden" name="start_date" value="{{ current_start_date }}">
+                <input type="hidden" name="end_date" value="{{ current_end_date }}">
+                <input type="hidden" name="preset" value="{{ current_preset }}">
+                <div class="form-row form-section">
+                    <div class="profile-filter">
+                        <label for="feed_profile_select">Profile:</label>
+                        <select name="feed_profile" id="feed_profile_select" onchange="this.form.submit()">
+                            <option value="" {% if not current_feed_profile %}selected{% endif %}>All Profiles</option>
+                            {% for profile in available_profiles %}
+                                <option value="{{ profile }}" {% if current_feed_profile == profile %}selected{% endif %}>
+                                    {{ profile }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="search-filter">
+                        <input type="search" name="search" id="search_box" placeholder="Search title & content..." value="{{ current_search_term }}">
+                        <button type="submit" class="btn btn-search" title="Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+                                <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        {% if current_search_term %}
+                            <a href="/articles?page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}" class="btn btn-clear-search" title="Clear Search">×</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <button type="button" class="date-filter-toggle" onclick="toggleDateFilters()">
+                        Date Filters <span class="toggle-icon">+</span>
+                    </button>
+                    <div id="date-filter-content" class="date-filter-content" style="display: none">
+                        <div class="date-inputs">
+                            <label for="start_date">From:</label>
+                            <input type="date" id="start_date" name="start_date" value="{{ current_start_date }}">
+                            <label for="end_date">To:</label>
+                            <input type="date" id="end_date" name="end_date" value="{{ current_end_date }}">
+                            <button type="submit" class="btn btn-filter">Apply Filters</button>
+                            <a href="/articles?page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-clear">Clear Dates</a>
+                        </div>
+
+                        <div class="date-presets">
+                            <strong>Quick Presets:</strong>
+                            <a href="/articles?preset=yesterday&page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-preset {% if current_preset == 'yesterday' %}active{% endif %}">Yesterday</a>
+                            <a href="/articles?preset=last_week&page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-preset {% if current_preset == 'last_week' %}active{% endif %}">Last 7 Days</a>
+                            <a href="/articles?preset=last_30d&page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-preset {% if current_preset == 'last_30d' %}active{% endif %}">Last 30 Days</a>
+                            <a href="/articles?preset=last_3m&page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-preset {% if current_preset == 'last_3m' %}active{% endif %}">Last 3 Months</a>
+                            <a href="/articles?preset=last_12m&page=1&sort_by={{ current_sort_by }}&direction={{ current_direction }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-preset {% if current_preset == 'last_12m' %}active{% endif %}">Last Year</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Sorting Controls -->
+            <div class="sorting-controls">
+                <strong>Sort by:</strong>
+                <a href="/articles?sort_by=published_date&direction=desc&page=1&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-sort {% if current_sort_by == 'published_date' and current_direction == 'desc' %}active{% endif %}">Date ↓</a>
+                <a href="/articles?sort_by=published_date&direction=asc&page=1&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-sort {% if current_sort_by == 'published_date' and current_direction == 'asc' %}active{% endif %}">Date ↑</a>
+                <a href="/articles?sort_by=title&direction=asc&page=1&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-sort {% if current_sort_by == 'title' and current_direction == 'asc' %}active{% endif %}">Title A-Z</a>
+                <a href="/articles?sort_by=impact_rating&direction=desc&page=1&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-sort {% if current_sort_by == 'impact_rating' and current_direction == 'desc' %}active{% endif %}">Impact ↓</a>
+            </div>
+
+            <!-- Articles List -->
+            {% if articles %}
+                <div class="articles-grid">
+                    {% for article in articles %}
+                        <div class="article-card">
+                            <div class="article-image-container">
+                                {% if article.image_url %}
+                                    <a href="/article/{{ article.id }}" title="View Article Details">
+                                        <img src="{{ article.image_url }}" alt="Image for {{ article.title }}" class="article-image" onerror="this.parentElement.innerHTML='<div class=\"article-image-placeholder\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"currentColor\" class=\"placeholder-icon\"><path d=\"M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06l4.47-4.47a.75.75 0 0 1 1.06 0l3.001 3.001 1.504-1.504a.75.75 0 0 1 1.06 0l4.91 4.91V6a.75.75 0 0 0-.75-.75H3.75A.75.75 0 0 0 3 6v10.06Z\"/></svg><span>No Image</span></div>
+                                    </a>
+                                {% else %}
+                                    <div class="article-image-placeholder">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="placeholder-icon">
+                                            <path d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06l4.47-4.47a.75.75 0 0 1 1.06 0l3.001 3.001 1.504-1.504a.75.75 0 0 1 1.06 0l4.91 4.91V6a.75.75 0 0 0-.75-.75H3.75A.75.75 0 0 0 3 6v10.06Z"/>
+                                        </svg>
+                                        <span>No Image Available</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="article-content">
+                                <h3 class="article-title">
+                                    <a href="/article/{{ article.id }}">{{ article.title }}</a>
+                                </h3>
+
+                                <div class="article-meta">
+                                    <div class="article-meta-row">
+                                        <span class="article-date">{{ article.published_date | dateformat('DD/MM/yyyy HH:mm') }}</span>
+                                        <span class="article-source">{{ article.feed_source }}</span>
+                                    </div>
+                                    <div class="article-meta-row">
+                                        <span class="profile-badge">{{ article.feed_profile }}</span>
+                                        {% if article.impact_rating %}
+                                            <span class="impact-rating impact-{{ article.impact_rating }}">Impact: {{ article.impact_rating }}/10</span>
+                                        {% else %}
+                                            <span class="impact-rating impact-unknown">Impact: Not Rated</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if article.processed_content %}
+                                    <div class="article-summary">
+                                        {{ article.processed_content_html | safe }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="article-actions">
+                                    <a href="/article/{{ article.id }}" class="btn btn-view">View Details</a>
+                                    <a href="{{ article.url }}" target="_blank" class="btn btn-external">Original Article ↗</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% set prev_page = page - 1 %}
+                    {% set next_page = page + 1 %}
+
+                    {% if page > 1 %}
+                        <a href="/articles?page={{ prev_page }}&sort_by={{ current_sort_by }}&direction={{ current_direction }}&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-pagination">« Previous</a>
+                    {% endif %}
+
+                    <span class="pagination-info">Page {{ page }} of {{ total_pages }}</span>
+
+                    {% if page < total_pages %}
+                        <a href="/articles?page={{ next_page }}&sort_by={{ current_sort_by }}&direction={{ current_direction }}&start_date={{ current_start_date }}&end_date={{ current_end_date }}&preset={{ current_preset }}&feed_profile={{ current_feed_profile }}&search={{ current_search_term }}" class="btn btn-pagination">Next »</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+        </div>
+
+        <script>
+            function toggleDateFilters() {
+                const content = document.getElementById('date-filter-content');
+                const icon = document.querySelector('.toggle-icon');
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                    icon.textContent = '−';
+                } else {
+                    content.style.display = 'none';
+                    icon.textContent = '+';
+                }
+            }
+        </script>
+    </body>
+</html>
