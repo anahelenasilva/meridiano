@@ -1,9 +1,5 @@
-// Technology Feed Configuration
-// Converted from Python to TypeScript
-
 import { FeedConfiguration, RSSFeed } from '../types/feed';
 
-// RSS Feeds for Technology News
 export const techRSSFeeds: RSSFeed[] = [
   // {
   //   url: "https://techcrunch.com/feed/",
@@ -119,7 +115,6 @@ export const techRSSFeeds: RSSFeed[] = [
   // },
 ];
 
-// Custom prompts for tech feed
 export const techPrompts = {
   articleSummary: `Summarize the key points of this news article objectively in 2-4 sentences. Identify the main topics covered.
 
@@ -153,7 +148,6 @@ Analyzed News Clusters (Most significant first):
 {cluster_analyses_text}`,
 };
 
-// Complete tech feed configuration
 export const techFeedConfig: FeedConfiguration = {
   profile: 'technology',
   rssFeeds: techRSSFeeds,
@@ -167,32 +161,24 @@ export const techFeedConfig: FeedConfiguration = {
 // Export individual parts for convenience
 export { techPrompts as prompts, techRSSFeeds as rssFeeds };
 
-// Export just the URLs for backward compatibility
-export const RSS_FEEDS = techRSSFeeds.map(feed => feed.url);
-
-// Utility functions for feed management
-export const getFeedsByCategory = (category: string): RSSFeed[] => {
+const getFeedsByCategory = (category: string): RSSFeed[] => {
   return techRSSFeeds.filter(feed => feed.category === category);
 };
 
-export const getEnabledFeeds = (): RSSFeed[] => {
+const getEnabledFeeds = (): RSSFeed[] => {
   return techRSSFeeds.filter(feed => feed.enabled !== false);
 };
 
-export const getFeedByUrl = (url: string): RSSFeed | undefined => {
-  return techRSSFeeds.find(feed => feed.url === url);
-};
-
-export const getFeedCategories = (): string[] => {
+const getFeedCategories = (): string[] => {
   const categories = new Set(
     techRSSFeeds
       .map(feed => feed.category)
       .filter((category): category is string => category !== undefined)
   );
+
   return Array.from(categories);
 };
 
-// Statistics about the feed configuration
 export const getTechFeedStats = () => {
   const totalFeeds = techRSSFeeds.length;
   const enabledFeeds = getEnabledFeeds().length;
@@ -211,6 +197,3 @@ export const getTechFeedStats = () => {
     categoryBreakdown: categoryStats,
   };
 };
-
-// Default export
-export default techFeedConfig;

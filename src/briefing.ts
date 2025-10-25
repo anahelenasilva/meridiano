@@ -12,13 +12,13 @@ import { ClusterAnalysis, DBArticle } from './types/scrapper';
 
 function clusterArticles(
   embeddings: number[][],
-  nClusters: number
+  clustersQtd: number
 ): number[] {
   if (embeddings.length < 2) {
     return embeddings.map(() => 0);
   }
 
-  const effectiveClusters = Math.min(nClusters, Math.floor(embeddings.length / 2));
+  const effectiveClusters = Math.min(clustersQtd, Math.floor(embeddings.length / 2));
 
   if (effectiveClusters < 2) {
     return embeddings.map(() => 0);
@@ -124,9 +124,9 @@ export async function generateBrief(
 
   const embeddings = articlesWithEmbeddings.map(a => JSON.parse(a.embedding!));
 
-  const nClusters = Math.min(briefingConfig.nClusters, Math.floor(articlesWithEmbeddings.length / 2));
+  const clustersQtd = Math.min(briefingConfig.clustersQtd, Math.floor(articlesWithEmbeddings.length / 2));
 
-  if (nClusters < 2) {
+  if (clustersQtd < 2) {
     console.log('Not enough articles to form meaningful clusters. Skipping clustering.');
     return {
       success: false,
@@ -134,15 +134,15 @@ export async function generateBrief(
     };
   }
 
-  console.log(`Clustering ${embeddings.length} articles into ${nClusters} clusters...`);
+  console.log(`Clustering ${embeddings.length} articles into ${clustersQtd} clusters...`);
 
-  const clusterLabels = clusterArticles(embeddings, nClusters);
+  const clusterLabels = clusterArticles(embeddings, clustersQtd);
 
-  const clusterGroups: DBArticle[][] = Array(nClusters).fill(null).map(() => []);
+  const clusterGroups: DBArticle[][] = Array(clustersQtd).fill(null).map(() => []);
 
   articlesWithEmbeddings.forEach((article, index) => {
     const clusterLabel = clusterLabels[index];
-    if (clusterLabel >= 0 && clusterLabel < nClusters) {
+    if (clusterLabel >= 0 && clusterLabel < clustersQtd) {
       clusterGroups[clusterLabel].push(article);
     }
   });
@@ -203,7 +203,7 @@ export async function generateBrief(
       content: finalBriefMarkdown,
       stats: {
         articlesAnalyzed: articlesWithEmbeddings.length,
-        clustersGenerated: nClusters,
+        clustersGenerated: clustersQtd,
         clustersUsed: clusterAnalyses.length,
       },
     };

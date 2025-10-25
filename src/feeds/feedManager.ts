@@ -1,4 +1,5 @@
 import { FeedConfiguration, FeedProfile, RSSFeed } from '../types/feed';
+import { brasilFeedConfig } from './brasil';
 import { techFeedConfig } from './tech';
 
 export class FeedManager {
@@ -7,12 +8,14 @@ export class FeedManager {
 
   private constructor() {
     this.registerFeedConfig(techFeedConfig);
+    this.registerFeedConfig(brasilFeedConfig);
   }
 
   public static getInstance(): FeedManager {
     if (!FeedManager.instance) {
       FeedManager.instance = new FeedManager();
     }
+
     return FeedManager.instance;
   }
 
@@ -43,6 +46,7 @@ export class FeedManager {
     for (const config of this.feedConfigurations.values()) {
       allFeeds.push(...config.rssFeeds);
     }
+
     return allFeeds;
   }
 
@@ -74,11 +78,13 @@ export class FeedManager {
   public toggleFeed(url: string, enabled: boolean): boolean {
     for (const config of this.feedConfigurations.values()) {
       const feed = config.rssFeeds.find(f => f.url === url);
+
       if (feed) {
         feed.enabled = enabled;
         return true;
       }
     }
+
     return false;
   }
 

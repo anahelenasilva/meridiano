@@ -3,6 +3,7 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import Parser from 'rss-parser';
 
+import { configManager } from './configs/configManager';
 import * as database from './database';
 import { addArticle } from './database/articles';
 import { feedManager } from './feeds/feedManager';
@@ -152,7 +153,18 @@ export async function scrapeArticles(
     try {
       const feed = await rssParser.parseURL(feedUrl);
 
-      for (const entry of feed.items) {
+      const appConfig = configManager.getAppConfig();
+
+      const maxArticlesForScrapping = appConfig.maxArticlesForScrapping || 15;
+      const items = feed.items.slice(0, maxArticlesForScrapping);
+
+      console.log('Processing items', {
+        totalItemsInFeed: feed.items.length,
+        itemsToProcess: items.length,
+        maxArticlesForScrapping,
+      });
+
+      for (const entry of items) {
         const url = entry.link;
         const title = entry.title || 'No Title';
         const publishedDate = entry.pubDate ? new Date(entry.pubDate) : new Date();

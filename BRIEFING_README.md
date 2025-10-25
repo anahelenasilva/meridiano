@@ -162,7 +162,7 @@ export const config = {
   processing: {
     briefingArticleLookbackHours: 24,
     minArticlesForBriefing: 5,
-    nClusters: 10,
+    clustersQtd: 10,
   },
   models: {
     deepseekChatModel: "deepseek-chat",

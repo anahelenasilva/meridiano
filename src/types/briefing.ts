@@ -14,7 +14,7 @@ export interface BriefGenerationOptions {
   feedProfile: FeedProfile;
   lookbackHours?: number;
   minArticles?: number;
-  nClusters?: number;
+  clustersQtd?: number;
   customPrompts?: {
     clusterAnalysis?: string;
     briefSynthesis?: string;

@@ -15,7 +15,7 @@ export interface Config {
     briefingArticleLookbackHours: number;
     minArticlesForBriefing: number;
     articlesPerPage: number;
-    nClusters: number;
+    clustersQtd: number;
   };
 
   // Model settings
@@ -28,6 +28,7 @@ export interface Config {
   app: {
     defaultFeedProfile: FeedProfile;
     databaseFile: string;
+    maxArticlesForScrapping: number;
   };
 }
 
@@ -93,7 +94,7 @@ Analyzed News Clusters (Most significant first):
 
     // Approximate number of clusters to aim for. Fine-tune based on results.
     // Alternatively, use algorithms like DBSCAN that don't require specifying k.
-    nClusters: 10, // Example, adjust as needed
+    clustersQtd: 10,
   },
 
   models: {
@@ -107,6 +108,9 @@ Analyzed News Clusters (Most significant first):
   app: {
     defaultFeedProfile: "default",
     databaseFile: "meridian.db",
+
+    // Maximum number of articles to fetch per feed for processing
+    maxArticlesForScrapping: 10,
   },
 };
 
@@ -121,7 +125,7 @@ export const {
   briefingArticleLookbackHours,
   minArticlesForBriefing,
   articlesPerPage,
-  nClusters,
+  clustersQtd,
 } = config.processing;
 
 export const {

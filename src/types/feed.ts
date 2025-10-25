@@ -1,4 +1,4 @@
-export type FeedProfile = 'default' | 'technology' | 'politics' | 'business' | 'health' | 'science' | string;
+export type FeedProfile = 'default' | 'technology' | 'politics' | 'business' | 'health' | 'science' | 'brasil' | string;
 
 export interface RSSFeed {
   url: string;

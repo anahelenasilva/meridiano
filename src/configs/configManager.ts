@@ -74,7 +74,7 @@ export class ConfigManager {
       lookbackHours: options?.lookbackHours || this.currentConfig.processing.briefingArticleLookbackHours,
       minArticles: options?.minArticles || this.currentConfig.processing.minArticlesForBriefing,
       customPrompts: options?.customPrompts,
-      nClusters: this.currentConfig.processing.nClusters,
+      clustersQtd: this.currentConfig.processing.clustersQtd,
       articlesPerPage: this.currentConfig.processing.articlesPerPage,
     };
   }
@@ -90,8 +90,8 @@ export class ConfigManager {
       errors.push('minArticlesForBriefing must be positive');
     }
 
-    if (this.currentConfig.processing.nClusters <= 0) {
-      errors.push('nClusters must be positive');
+    if (this.currentConfig.processing.clustersQtd <= 0) {
+      errors.push('clustersQtd must be positive');
     }
 
     if (this.currentConfig.processing.articlesPerPage <= 0) {
@@ -104,6 +104,10 @@ export class ConfigManager {
 
     if (!this.currentConfig.models.embeddingModel.trim()) {
       errors.push('embeddingModel cannot be empty');
+    }
+
+    if (this.currentConfig.app.maxArticlesForScrapping <= 0) {
+      errors.push('maxArticlesForScrapping must be positive');
     }
 
     Object.entries(this.currentConfig.prompts).forEach(([key, prompt]) => {
@@ -142,7 +146,7 @@ export class ConfigManager {
           processing: {
             ...this.currentConfig.processing,
             // Maybe use more clusters in production
-            nClusters: 15,
+            clustersQtd: 15,
           },
         };
       case 'test':
@@ -151,11 +155,12 @@ export class ConfigManager {
             ...this.currentConfig.processing,
             // Smaller values for faster tests
             minArticlesForBriefing: 2,
-            nClusters: 3,
+            clustersQtd: 3,
           },
           app: {
             ...this.currentConfig.app,
             databaseFile: ':memory:', // Use in-memory database for tests
+            maxArticlesForScrapping: 10,
           },
         };
       default:

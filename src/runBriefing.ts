@@ -59,7 +59,6 @@ async function runAll(feedProfile: FeedProfile): Promise<void> {
 
     const feedUrls = enabledFeeds.map(f => f.url);
 
-
     // console.log("deleting articles");
     // await deleteArticles();
     // console.log("deleting articles finished");
