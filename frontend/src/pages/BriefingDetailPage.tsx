@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Tag } from 'lucide-react';
 import moment from 'moment';
+import ReactMarkdown from 'react-markdown';
 import { Link, useParams } from 'react-router-dom';
 
 import { apiService } from '../services/api';
@@ -78,27 +79,12 @@ const BriefingDetailPage = () => {
             </span>
           </div>
         </div>
-
-        {brief.brief_markdown && (
-          <div className="text-lg text-gray-700 leading-relaxed mb-6 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-            <div className="font-medium text-blue-900 mb-2">Executive Summary</div>
-            {/* {brief.brief_markdown} */}
-
-            TO-DO
-          </div>
-        )}
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Full Briefing</h2>
+        <div className="font-medium text-3xl text-blue-900 mb-2">Executive Summary</div>
         <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-          {brief.brief_markdown.split('\n').map((paragraph, index) => (
-            paragraph.trim() && (
-              <p key={index} className="mb-4">
-                {paragraph}
-              </p>
-            )
-          ))}
+          <ReactMarkdown>{brief.brief_markdown}</ReactMarkdown>
         </div>
       </div>
 
