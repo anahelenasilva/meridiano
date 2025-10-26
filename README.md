@@ -7,7 +7,7 @@
 
 Meridiano cuts through the news noise by scraping configured sources, analyzing stories with AI (summaries, impact ratings), clustering related events, and delivering concise daily briefs via a web interface.
 
-Based on the original project <https://github.com/iliane5/meridian>
+Based on the project of [lfzawacki/meridiano](https://github.com/lfzawacki/meridiano/), that's based on the original project [iliane5/meridian](https://github.com/iliane5/meridian)
 
 
 ## Why It Exists
@@ -90,39 +90,36 @@ graph TD
     AA --> BB["User Browser"];
 ```
 
-1.  **Configuration**: Load base settings (`config_base.py`) and feed-specific settings (`feeds/<profile_name>.py`), including RSS feeds and custom prompts.
-2.  **CLI Control**: `run_briefing.py` orchestrates the stages based on CLI arguments (`--feed`, `--scrape`, `--process`, `--rate`, `--generate`, `--all`).
+1.  **Configuration**: Load base settings (`src/config/config.ts`) and feed-specific settings (`src/feeds/<profile_name>.ts`), including RSS feeds and custom prompts.
+2.  **CLI Control**: `runBriefing.ts` orchestrates the stages based on CLI arguments (`--feed`, `--scrape`, `--process`, `--rate`, `--generate`, `--all`).
 3.  **Scraping**: Fetches RSS, extracts article content, attempts to find an image (RSS or OG tag), and saves metadata (including `feed_profile`) to the `articles` table. FTS triggers populate `articles_fts`.
 4.  **Processing**: Fetches unprocessed articles (per profile), generates summaries (using Deepseek), generates embeddings (using configured provider), and updates the `articles` table.
 5.  **Rating**: Fetches unrated articles (per profile), asks Deepseek to rate impact based on summary, and updates the `articles` table.
 6.  **Brief Generation**: Fetches recent, processed articles for the specified `feed_profile`, clusters them, analyzes clusters using profile-specific prompts (Deepseek), synthesizes a final brief using profile-specific prompts (Deepseek), and saves it to the `briefs` table.
-7.  **Web Interface**: `app.py` (Flask) serves the UI, allowing users to browse briefs and articles, search (FTS), filter (profile, date), sort (date, impact), and paginate results.
+7.  **Web Interface**: `frontend` (Vite) serves the UI, allowing users to browse briefs and articles, search (FTS), filter (profile, date), sort (date, impact), and paginate results.
 
 ## Tech Stack
 
-*   **Backend**: Python 3.10+
+*   **Backend**: Node.js
 *   **Database**: SQLite (with FTS5 enabled)
-*   **Web Framework**: Flask
 *   **AI APIs**:
     *   Deepseek API (Summaries, Rating, Analysis, Synthesis)
     *   Together AI API (Embeddings - or your configured provider)
 *   **Core Libraries**:
-    *   `feedparser` (RSS handling)
-    *   `requests` (HTTP requests)
-    *   `trafilatura` (Main content extraction)
-    *   `beautifulsoup4` / `lxml` (HTML parsing for OG tags)
-    *   `openai` (Python client for interacting with Deepseek/TogetherAI APIs)
-    *   `scikit-learn`, `numpy` (Clustering)
-    *   `python-dotenv` (Environment variables)
-    *   `argparse` (CLI arguments)
-    *   `markdown` (Rendering content in web UI)
-*   **Frontend**: HTML, CSS, minimal vanilla JavaScript (for date filter toggle)
+    *   `axios` (HTTP requests)
+    *   `rss-parser` (RSS handling)
+    *   `openai` (Client for interacting with Deepseek/TogetherAI APIs)
+    *   `ml-kmeans` (Clustering)
+    *   `dotenv` (Environment variables)
+    *   `commander` (CLI arguments)
+    *   `react-markdown` (Rendering content in web UI)
+*   **Frontend**: Vite + React + Tailwind CSS
 
 ## Getting Started
 
 **Prerequisites**:
 
-*   Python 3.10 or later
+*   Node.js 14 or later
 *   Git (optional, for cloning)
 *   API Keys:
     *   Deepseek API Key
@@ -136,21 +133,12 @@ graph TD
     cd meridiano
     ```
 
-2.  **Create and activate a virtual environment:**
+2.  **Install dependencies:**
     ```bash
-    python -m venv venv
-    # On macOS/Linux:
-    source venv/bin/activate
-    # On Windows:
-    .\venv\Scripts\activate
+    npm install
     ```
 
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Configure API Keys:**
+3.  **Configure API Keys:**
     *   Create a file named `.env` in the project root.
     *   Add your API keys:
         ```dotenv
@@ -158,26 +146,26 @@ graph TD
         EMBEDDING_API_KEY="your_togetherai_or_other_embedding_api_key_here"
         ```
 
-5.  **Configure Feeds and Prompts:**
-    *   Review `config_base.py` for default settings and prompts.
-    *   Create a `feeds/` directory in the project root.
-    *   Inside `feeds/`, create profile configuration files (e.g., `default.py`, `tech.py`, `brazil.py`).
-    *   Each `feeds/*.py` file **must** contain an `RSS_FEEDS = [...]` list.
-    *   Optionally, define `PROMPT_CLUSTER_ANALYSIS` or `PROMPT_BRIEF_SYNTHESIS` in a `feeds/*.py` file to override the defaults from `config_base.py` for that specific profile. Define `EMBEDDING_MODEL` if overriding the default.
+4.  **Configure Feeds and Prompts:**
+    *   Review `src/config/config.ts` for default settings and prompts.
+    *   Create a `src/feeds/` directory in the project root.
+    *   Inside `src/feeds/`, create profile configuration files (e.g., `default.ts`, `tech.ts`, `brazil.ts`).
+    *   Each `src/feeds/*.ts` file **must** contain an `RSS_FEEDS = [...]` list.
+    *   Optionally, define `PROMPT_CLUSTER_ANALYSIS` or `PROMPT_BRIEF_SYNTHESIS` in a `src/feeds/*.ts` file to override the defaults from `src/config/config.ts` for that specific profile. Define `EMBEDDING_MODEL` if overriding the default.
 
-6.  **Initialize Database:**
-    *   The database (`meridian.db`) and its schema (including FTS tables) are created automatically the first time you run `run_briefing.py` or `app.py`.
+5.  **Initialize Database:**
+    *   The database (`meridian.db`) and its schema (including FTS tables) are created automatically the first time you run `src/runBriefing.ts`.
 
 ## Running the Application
 
-Meridiano consists of a command-line script (`run_briefing.py`) for data processing and a web server (`app.py`) for viewing results.
+Meridiano consists of a command-line script (`src/runBriefing.ts`) for data processing and a web server (`frontend`) for viewing results.
 
-**1. Running Processing Stages (`run_briefing.py`)**
+**1. Running Processing Stages (`src/runBriefing.ts`)**
 
 Use the command line to run different stages for specific feed profiles.
 
 *   **Arguments:**
-    *   `--feed <profile_name>`: Specify the profile to use (e.g., `default`, `tech`, `brazil`). Defaults to `default`.
+    *   `--feed <profile_name>`: Specify the profile to use (e.g., `default`, `tech`, `brasil`). Defaults to `default`.
     *   `--scrape-articles`: Run only the scraping stage.
     *   `--process-articles`: Run only the summarization/embedding stage (per profile).
     *   `--rate-articles`: Run only the impact rating stage (per profile).
@@ -187,37 +175,29 @@ Use the command line to run different stages for specific feed profiles.
 
 *   **Examples:**
     ```bash
-    # Scrape articles for the 'tech' profile
-    python run_briefing.py --feed tech --scrape-articles
+    # Scrape articles
+    npm run briefing:scrape
 
-    # Process and rate articles for the 'default' profile
-    python run_briefing.py --feed default --process-articles
-    python run_briefing.py --feed default --rate-articles
-
-    # Generate the brief for the 'brazil' profile
-    python run_briefing.py --feed brazil --generate-brief
+    # Generate the brief for the 'brasil' profile
+    npm run briefing:brasil
 
     # Run all stages for the 'tech' profile
-    python run_briefing.py --feed tech --all
+    npm run briefing:tech
     ```
 
-*   **Scheduling:** For automatic daily runs, use `cron` (Linux/macOS) or Task Scheduler (Windows) to execute the desired `run_briefing.py` command(s) daily. Remember to use the full path to the Python executable within your virtual environment. Example cron job (runs all stages for 'default' profile at 7 AM):
+*   **Scheduling:** For automatic daily runs, use `cron` (Linux/macOS) or Task Scheduler (Windows) to execute the desired `src/runBriefing.ts` command(s) daily. Remember to use the full path to the Node.js executable within your environment. Example cron job (runs all stages for 'default' profile at 7 AM):
     ```cron
-    0 7 * * * /path/to/meridiano/venv/bin/python /path/to/meridiano/run_briefing.py --feed default --all >> /path/to/meridiano/meridiano.log 2>&1
+    0 7 * * * /path/to/meridiano/node /path/to/meridiano/src/runBriefing.ts --feed default --all >> /path/to/meridiano/meridiano.log 2>&1
     ```
 
-**2. Running the Web Server (`app.py`)**
+**2. Running the Web Server (`frontend`)**
 
-*   Start the Flask development server:
+*   Start the development server:
     ```bash
-    python app.py
+    cd frontend
+    npm run dev
     ```
-*   Access the web interface in your browser, usually at `http://localhost:5000`.
-*   For more robust deployment, consider using a production WSGI server like Gunicorn:
-    ```bash
-    # pip install gunicorn
-    gunicorn --bind 0.0.0.0:5000 app:app
-    ```
+*   Access the web interface in your browser, usually at `http://localhost:5174`.
 
 ## Contributing
 
