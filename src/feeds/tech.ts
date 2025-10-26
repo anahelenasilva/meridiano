@@ -2,6 +2,13 @@ import { FeedConfiguration, RSSFeed } from '../types/feed';
 
 export const techRSSFeeds: RSSFeed[] = [
   {
+    url: "https://nodejs.org/en/feed/blog.xml",
+    name: "NodeJs Blog",
+    category: "technical",
+    description: "Official Node.js project blog",
+    enabled: true,
+  },
+  {
     url: "https://techcrunch.com/feed/",
     name: "TechCrunch",
     category: "startup",
