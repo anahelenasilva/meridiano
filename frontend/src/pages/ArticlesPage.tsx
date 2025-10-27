@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, ExternalLink, Eye, Search } from 'lucide-react';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiService } from '../services/api';
 import type { ArticlesResponse } from '../types/api';
@@ -21,25 +21,49 @@ const ArticlesPage = () => {
     preset: searchParams.get('preset') || '',
   });
 
-  // Update URL when filters change
-  useEffect(() => {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value.toString());
-    });
-    setSearchParams(params);
-  }, [filters, setSearchParams]);
+  // Local search input state for debouncing
+  const [searchInput, setSearchInput] = useState(filters.search);
+  const debounceTimeout = useRef<number>();
 
-  const updateFilter = (key: string, value: string | number) => {
+  const updateFilter = useCallback((key: string, value: string | number) => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
       ...(key !== 'page' && { page: 1 }) // Reset to page 1 when other filters change
     }));
-  };
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(() => {
+      if (searchInput !== filters.search) {
+        updateFilter('search', searchInput);
+      }
+    }, 500); // 500ms delay
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchInput, filters.search, updateFilter]);
+
+  // Update URL when filters change (except for search input changes)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value.toString());
+    });
+    setSearchParams(params, { replace: true });
+  }, [filters, setSearchParams]);
 
   const { data, isLoading, error } = useQuery<ArticlesResponse>({
     queryKey: ['articles', filters],
+    cacheTime: 0,
     queryFn: async () => {
       const response = await apiService.getArticles(filters);
       return response.data;
@@ -109,10 +133,15 @@ const ArticlesPage = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
-                type="search"
+                type="text"
                 placeholder="Search articles..."
-                value={filters.search}
-                onChange={(e) => updateFilter('search', e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
