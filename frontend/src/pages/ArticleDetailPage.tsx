@@ -104,6 +104,11 @@ const ArticleDetailPage = () => {
                 Impact Rating: {article.impact_rating}/10
               </div>
             )}
+            {article.categories && article.categories.length > 0 && (
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs bg-cyan-200 text-cyan-800`}>
+                Categories: {article.categories.join(', ')}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">

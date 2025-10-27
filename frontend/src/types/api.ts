@@ -1,3 +1,15 @@
+const ArticleCategory = {
+  NEWS: 'news',
+  BLOG: 'blog',
+  RESEARCH: 'research',
+  NODEJS: 'nodejs',
+  TYPESCRIPT: 'typescript',
+  TUTORIAL: 'tutorial',
+  OTHER: 'other',
+} as const;
+
+export type ArticleCategory = typeof ArticleCategory[keyof typeof ArticleCategory];
+
 export interface Article {
   id: number;
   url: string;
@@ -12,6 +24,7 @@ export interface Article {
   impact_rating: number;
   image_url: string;
   created_at: string;
+  categories: ArticleCategory[];
 }
 
 export interface Briefing {
