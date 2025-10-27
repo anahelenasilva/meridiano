@@ -8,7 +8,7 @@ import config from './configs/config';
 import * as database from './database';
 import { getDatabaseStats } from './database/stats';
 import { feedManager } from './feeds/feedManager';
-import { processArticles, rateArticles } from './processor';
+import { categorizeArticles, processArticles, rateArticles } from './processor';
 import { scrapeArticles } from './scraper';
 import { FeedProfile } from './types/feed';
 
@@ -78,8 +78,13 @@ async function runAll(feedProfile: FeedProfile): Promise<void> {
     const ratingStats = await rateArticles(feedProfile);
     console.log(`Rating completed. Rated: ${ratingStats.articlesRated}, Errors: ${ratingStats.errors}`);
 
-    // 4. Generate brief
-    console.log('\n--- Stage 4: Generating Brief ---');
+    // 4. Categorize articles
+    console.log('\n--- Stage 4: Categorizing Articles ---');
+    const categorizationStats = await categorizeArticles(feedProfile);
+    console.log(`Categorization completed. Categorized: ${categorizationStats.articlesCategorized}, Errors: ${categorizationStats.errors}`);
+
+    // 5. Generate brief
+    console.log('\n--- Stage 5: Generating Brief ---');
     const briefResult = await generateBrief(feedProfile);
 
     if (briefResult.success) {
@@ -128,6 +133,12 @@ async function runRating(feedProfile: FeedProfile): Promise<void> {
 
   const stats = await rateArticles(feedProfile);
   console.log(`Rating completed. Rated: ${stats.articlesRated}, Errors: ${stats.errors}`);
+}
+
+async function runCategorization(feedProfile: FeedProfile): Promise<void> {
+  console.log('\n>>> Running Categorization Stage <<<');
+  const stats = await categorizeArticles(feedProfile);
+  console.log(`Categorization completed. Categorized: ${stats.articlesCategorized}, Errors: ${stats.errors}`);
 }
 
 async function runBriefGeneration(feedProfile: FeedProfile): Promise<void> {
@@ -212,6 +223,7 @@ program
   .option('--scrape', 'Run only the article scraping stage')
   .option('--process', 'Run only the article processing (summarize, embed) stage')
   .option('--rate', 'Run only the article impact rating stage')
+  .option('--categorize', 'Run only the article categorization stage')
   .option('--generate', 'Run only the brief generation stage')
   .option('--all', 'Run all stages sequentially (default behavior)')
   .option('--status', 'Show system status')
@@ -249,7 +261,7 @@ async function main(): Promise<void> {
 
     console.log(`\nMeridian Briefing Run [${feedProfile}] - ${new Date().toISOString()}`);
 
-    const hasSpecificStage = options.scrape || options.process || options.rate || options.generate;
+    const hasSpecificStage = options.scrape || options.process || options.rate || options.categorize || options.generate;
     const shouldRunAll = options.all || !hasSpecificStage;
 
     if (options.simpleBrief) {
@@ -274,6 +286,10 @@ async function main(): Promise<void> {
 
       if (options.rate) {
         await runRating(feedProfile);
+      }
+
+      if (options.categorize) {
+        await runCategorization(feedProfile);
       }
 
       if (options.generate) {

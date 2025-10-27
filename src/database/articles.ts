@@ -1,4 +1,4 @@
-import { CountTotalArticlesInput, DBArticle, PaginatedArticleInput } from 'src/types/article';
+import { ArticleCategory, CountTotalArticlesInput, DBArticle, PaginatedArticleInput } from 'src/types/article';
 import { db } from '.';
 import { FeedProfile } from '../types/feed';
 
@@ -9,7 +9,8 @@ export function addArticle(
   feedSource: string,
   rawContent: string,
   feedProfile: FeedProfile,
-  imageUrl?: string
+  imageUrl?: string,
+  categories?: ArticleCategory[]
 ): Promise<number | null> {
   return new Promise((resolve, reject) => {
     if (!db) {
@@ -18,12 +19,12 @@ export function addArticle(
     }
 
     const stmt = db.prepare(`
-      INSERT INTO articles (url, title, published_date, feed_source, raw_content, feed_profile, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO articles (url, title, published_date, feed_source, raw_content, feed_profile, image_url, categories)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
-      [url, title, publishedDate.toISOString(), feedSource, rawContent, feedProfile, imageUrl],
+      [url, title, publishedDate.toISOString(), feedSource, rawContent, feedProfile, imageUrl, categories ? JSON.stringify(categories) : null],
       function (err) {
         if (err) {
           if (err.message.includes('UNIQUE constraint failed')) {
@@ -63,6 +64,7 @@ export function getUnprocessedArticles(feedProfile: FeedProfile, limit: number =
           ...row,
           published_date: new Date(row.published_date),
           created_at: new Date(row.created_at),
+          categories: row.categories ? JSON.parse(row.categories) : undefined,
         }));
         resolve(articles);
       }
@@ -120,6 +122,37 @@ export function getUnratedArticles(feedProfile: FeedProfile, limit: number = 100
           ...row,
           published_date: new Date(row.published_date),
           created_at: new Date(row.created_at),
+          categories: row.categories ? JSON.parse(row.categories) : undefined,
+        }));
+        resolve(articles);
+      }
+    });
+  });
+}
+
+export function getUncategorizedArticles(feedProfile: FeedProfile, limit: number = 1000): Promise<DBArticle[]> {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not initialized'));
+      return;
+    }
+
+    const query = `
+      SELECT * FROM articles
+      WHERE feed_profile = ? AND processed_content IS NOT NULL AND categories IS NULL
+      ORDER BY published_date DESC
+      LIMIT ?
+    `;
+
+    db.all(query, [feedProfile, limit], (err, rows: any[]) => {
+      if (err) {
+        reject(err);
+      } else {
+        const articles = rows.map(row => ({
+          ...row,
+          published_date: new Date(row.published_date),
+          created_at: new Date(row.created_at),
+          categories: row.categories ? JSON.parse(row.categories) : undefined,
         }));
         resolve(articles);
       }
@@ -141,6 +174,30 @@ export function updateArticleRating(articleId: number, impactRating: number): Pr
     `);
 
     stmt.run([impactRating, articleId], (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+      stmt.finalize();
+    });
+  });
+}
+
+export function updateArticleCategories(articleId: number, categories: ArticleCategory[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not initialized'));
+      return;
+    }
+
+    const stmt = db.prepare(`
+      UPDATE articles
+      SET categories = ?
+      WHERE id = ?
+    `);
+
+    stmt.run([JSON.stringify(categories), articleId], (err) => {
       if (err) {
         reject(err);
       } else {
@@ -180,6 +237,7 @@ export function getArticlesForBriefing(
           ...row,
           published_date: new Date(row.published_date),
           created_at: new Date(row.created_at),
+          categories: row.categories ? JSON.parse(row.categories) : undefined,
         }));
         resolve(articles);
       }
@@ -347,7 +405,7 @@ export function getArticleById(articleId: number): Promise<DBArticle | null> {
       SELECT
         id, url, title, published_date, feed_source, feed_profile,
         raw_content as content, processed_content, impact_rating,
-        image_url, created_at
+        image_url, categories, created_at
       FROM articles
       WHERE id = ?
     `;
@@ -356,6 +414,10 @@ export function getArticleById(articleId: number): Promise<DBArticle | null> {
       if (err) {
         reject(err);
         return;
+      }
+
+      if (row) {
+        row.categories = row.categories ? JSON.parse(row.categories) : undefined;
       }
 
       resolve(row || null);
@@ -385,7 +447,7 @@ export function getArticlesPaginated(options: PaginatedArticleInput): Promise<DB
       SELECT
         id, url, title, published_date, feed_source, feed_profile,
         raw_content as content, processed_content, impact_rating,
-        image_url, created_at
+        image_url, categories, created_at
       FROM articles
       WHERE 1=1
     `;
@@ -427,7 +489,12 @@ export function getArticlesPaginated(options: PaginatedArticleInput): Promise<DB
         return;
       }
 
-      resolve(rows || []);
+      const articles = rows.map(row => ({
+        ...row,
+        categories: row.categories ? JSON.parse(row.categories) : undefined,
+      }));
+
+      resolve(articles || []);
     });
   });
 }
@@ -500,12 +567,11 @@ export function getRelatedArticles(articleId: number, limit: number = 5): Promis
         return;
       }
 
-      // Find related articles from same feed profile, excluding the original
       const relatedQuery = `
         SELECT
           id, url, title, published_date, feed_source, feed_profile,
           raw_content as content, processed_content, impact_rating,
-          image_url, created_at
+          image_url, categories, created_at
         FROM articles
         WHERE feed_profile = ?
         AND id != ?
@@ -524,7 +590,12 @@ export function getRelatedArticles(articleId: number, limit: number = 5): Promis
           return;
         }
 
-        resolve(rows || []);
+        const articles = rows.map(row => ({
+          ...row,
+          categories: row.categories ? JSON.parse(row.categories) : undefined,
+        }));
+
+        resolve(articles || []);
       });
     });
   });
@@ -548,6 +619,7 @@ export async function getArticlesByFilter(whereClause: string, params: any[], ba
             ...row,
             published_date: new Date(row.published_date),
             created_at: new Date(row.created_at),
+            categories: row.categories ? JSON.parse(row.categories) : undefined,
           })));
         }
       }

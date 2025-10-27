@@ -1,10 +1,10 @@
 import { callDeepseekChat, getEmbedding } from './apiClients';
 import { isValidImpactRating } from './configs/config';
 import { configManager } from './configs/configManager';
-import { getArticlesByFilter, getUnprocessedArticles, getUnratedArticles, updateArticleProcessing, updateArticleRating } from './database/articles';
+import { getArticlesByFilter, getUncategorizedArticles, getUnprocessedArticles, getUnratedArticles, updateArticleCategories, updateArticleProcessing, updateArticleRating } from './database/articles';
 import { getStats } from './database/briefing';
 import { ProcessingStats } from './types/ai';
-import { DBArticle } from './types/article';
+import { ArticleCategory, DBArticle } from './types/article';
 import { ProcessingStatsResult } from './types/briefing';
 import { FeedProfile } from './types/feed';
 
@@ -18,6 +18,7 @@ export async function processArticles(
     feedProfile,
     articlesProcessed: 0,
     articlesRated: 0,
+    articlesCategorized: 0,
     errors: 0,
     startTime: new Date(),
   };
@@ -96,6 +97,7 @@ export async function rateArticles(
     feedProfile,
     articlesProcessed: 0,
     articlesRated: 0,
+    articlesCategorized: 0,
     errors: 0,
     startTime: new Date(),
   };
@@ -183,6 +185,7 @@ export async function reprocessArticles(
     feedProfile,
     articlesProcessed: 0,
     articlesRated: 0,
+    articlesCategorized: 0,
     errors: 0,
     startTime: new Date(),
   };
@@ -250,6 +253,99 @@ export async function reprocessArticles(
 
   stats.endTime = new Date();
   console.log(`--- Reprocessing Finished. Processed: ${stats.articlesProcessed}, Rated: ${stats.articlesRated} ---`);
+
+  return stats;
+}
+
+export async function categorizeArticles(
+  feedProfile: FeedProfile,
+  limit: number = 1000
+): Promise<ProcessingStats> {
+  console.log('\n--- Starting Article Categorization ---');
+
+  const stats: ProcessingStats = {
+    feedProfile,
+    articlesProcessed: 0,
+    articlesRated: 0,
+    articlesCategorized: 0,
+    errors: 0,
+    startTime: new Date(),
+  };
+
+  const uncategorizedArticles = await getUncategorizedArticles(feedProfile, limit);
+
+  if (uncategorizedArticles.length === 0) {
+    console.log('No new articles to categorize.');
+    stats.endTime = new Date();
+    return stats;
+  }
+
+  console.log(`Found ${uncategorizedArticles.length} processed articles to categorize.`);
+
+  for (const article of uncategorizedArticles) {
+    console.log(`Categorizing article ID: ${article.id}: ${article.title}...`);
+
+    if (!article.processed_content) {
+      console.log(`  Skipping article ${article.id} - no processed content found.`);
+      continue;
+    }
+
+    try {
+      const categoryPrompt = configManager.getCategoryClassificationPrompt(
+        article.title,
+        article.processed_content.substring(0, 2000) // Limit content length
+      );
+
+      const categoryResponse = await callDeepseekChat(categoryPrompt);
+
+      if (categoryResponse) {
+        try {
+          const categories = JSON.parse(categoryResponse.trim());
+
+          if (Array.isArray(categories) && categories.length > 0) {
+            const validCategories = categories.filter(cat =>
+              Object.values(ArticleCategory).includes(cat as ArticleCategory)
+            ) as ArticleCategory[];
+
+            if (validCategories.length > 0) {
+              await updateArticleCategories(article.id, validCategories);
+              stats.articlesCategorized++;
+              console.log(`  Article ID ${article.id} categorized as: ${validCategories.join(', ')}`);
+            } else {
+              console.log(`  Warning: No valid categories found in response for article ${article.id}.`);
+
+              await updateArticleCategories(article.id, [ArticleCategory.OTHER]);
+              stats.articlesCategorized++;
+            }
+          } else {
+            console.log(`  Warning: Invalid category array format for article ${article.id}.`);
+
+            await updateArticleCategories(article.id, [ArticleCategory.OTHER]);
+            stats.articlesCategorized++;
+          }
+        } catch (parseError) {
+          console.log(`  Warning: Could not parse category response '${categoryResponse}' for article ${article.id}.`);
+
+          await updateArticleCategories(article.id, [ArticleCategory.OTHER]);
+          stats.articlesCategorized++;
+        }
+      } else {
+        console.log(`  Warning: No category response received for article ${article.id}.`);
+
+        await updateArticleCategories(article.id, [ArticleCategory.OTHER]);
+        stats.articlesCategorized++;
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error(`Error categorizing article ${article.id}:`, error);
+      stats.errors++;
+    }
+  }
+
+  stats.endTime = new Date();
+  console.log(`--- Categorization Finished. Categorized ${stats.articlesCategorized} articles. ---`);
 
   return stats;
 }

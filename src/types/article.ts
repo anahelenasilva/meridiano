@@ -50,6 +50,7 @@ export interface DBArticle {
   feed_profile: string;
   image_url?: string;
   created_at: Date;
+  categories?: ArticleCategory[];
 }
 
 export interface ArticleContent {
@@ -62,4 +63,14 @@ export interface ClusterAnalysis {
   analysis: string;
   size: number;
   articles?: DBArticle[];
+}
+
+export enum ArticleCategory {
+  NEWS = 'news',
+  BLOG = 'blog',
+  RESEARCH = 'research',
+  NODEJS = 'nodejs',
+  TYPESCRIPT = 'typescript',
+  TUTORIAL = 'tutorial',
+  OTHER = 'other',
 }

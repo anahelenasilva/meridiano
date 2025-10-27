@@ -29,6 +29,10 @@ export class ConfigManager {
     return this.getPrompt('impactRating', { summary });
   }
 
+  public getCategoryClassificationPrompt(title: string, content: string): string {
+    return this.getPrompt('categoryClassification', { title, content });
+  }
+
   public getClusterAnalysisPrompt(
     feedProfile: FeedProfile,
     clusterSummariesText: string,

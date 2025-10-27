@@ -40,6 +40,7 @@ function createTables(): Promise<void> {
         impact_rating INTEGER,
         feed_profile TEXT NOT NULL,
         image_url TEXT,
+        categories TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;

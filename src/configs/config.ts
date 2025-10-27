@@ -6,6 +6,7 @@ export interface Config {
   prompts: {
     articleSummary: string;
     impactRating: string;
+    categoryClassification: string;
     clusterAnalysis: string;
     briefSynthesis: string;
   };
@@ -58,6 +59,28 @@ Summary:
 "{summary}"
 
 Output ONLY the integer number representing your rating (1-10).
+`,
+
+    // Used in categorize_articles (operates globally, so uses default)
+    categoryClassification: `
+Analyze the following article title and content to classify it into appropriate categories.
+
+Available categories:
+- news: General news articles
+- blog: Blog posts or opinion pieces
+- research: Research papers or technical studies
+- nodejs: Node.js related content
+- typescript: TypeScript related content
+- tutorial: Tutorials or how-to guides
+- other: Content that doesn't fit other categories
+
+Article Title: "{title}"
+Article Content: "{content}"
+
+Analyze the content and return ONLY a JSON array of relevant categories. For example:
+["news", "nodejs"] or ["tutorial", "typescript"] or ["research"]
+
+Choose 1-3 most relevant categories. Return only the JSON array, no other text.
 `,
 
     // Used in generate_brief (can be overridden per profile)
