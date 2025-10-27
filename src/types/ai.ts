@@ -1,4 +1,3 @@
-import { FeedProfile } from "./feed";
 
 export type ImpactRating = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
@@ -19,24 +18,6 @@ export interface EmbeddingResponse {
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
-}
-
-export interface ArticleSummary {
-  id: string;
-  title: string;
-  content: string;
-  summary: string;
-  impactRating: ImpactRating;
-  timestamp: Date;
-  feedProfile: FeedProfile;
-}
-
-export interface NewsCluster {
-  id: string;
-  articles: ArticleSummary[];
-  analysis: string;
-  significance: number;
-  topics: string[];
 }
 
 export interface ProcessingStats {

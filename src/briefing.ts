@@ -6,9 +6,9 @@ import { configManager } from './configs/configManager';
 import * as database from './database';
 import { getArticlesForBriefing } from './database/articles';
 import { saveBrief } from './database/briefing';
+import { ClusterAnalysis, DBArticle } from './types/article';
 import { BriefGenerationOptions, GenerateBriefResult, GetBriefingTrendsResult, RecentBriefingResult, SimpleBriefResult } from './types/briefing';
 import { FeedProfile } from './types/feed';
-import { ClusterAnalysis, DBArticle } from './types/scrapper';
 
 function clusterArticles(
   embeddings: number[][],

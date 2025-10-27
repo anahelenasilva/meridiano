@@ -7,8 +7,9 @@ import { configManager } from './configs/configManager';
 import * as database from './database';
 import { addArticle } from './database/articles';
 import { feedManager } from './feeds/feedManager';
+import { ArticleContent } from './types/article';
 import { FeedProfile } from './types/feed';
-import { ArticleContent, ScrapingStats } from './types/scrapper';
+import { ScrapingStats } from './types/scrapper';
 
 const rssParser = new Parser({
   customFields: {

@@ -1,7 +1,6 @@
-import { CountTotalArticlesInput, PaginatedArticleInput } from 'src/types/article';
+import { CountTotalArticlesInput, DBArticle, PaginatedArticleInput } from 'src/types/article';
 import { db } from '.';
 import { FeedProfile } from '../types/feed';
-import { DBArticle } from '../types/scrapper';
 
 export function addArticle(
   url: string,

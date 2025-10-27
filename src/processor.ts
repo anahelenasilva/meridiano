@@ -4,9 +4,9 @@ import { configManager } from './configs/configManager';
 import { getArticlesByFilter, getUnprocessedArticles, getUnratedArticles, updateArticleProcessing, updateArticleRating } from './database/articles';
 import { getStats } from './database/briefing';
 import { ProcessingStats } from './types/ai';
+import { DBArticle } from './types/article';
 import { ProcessingStatsResult } from './types/briefing';
 import { FeedProfile } from './types/feed';
-import { DBArticle } from './types/scrapper';
 
 export async function processArticles(
   feedProfile: FeedProfile,
