@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import moment from 'moment';
 
-import { countTotalArticles, getArticlesPaginated } from '../../database/articles';
+import { countTotalArticles, getArticlesPaginated, getDistinctCategories } from '../../database/articles';
 import { getDistinctFeedProfiles } from '../../database/feed_profile';
 import { prepareArticleContent } from './prepareArticleContent';
 
@@ -14,6 +14,7 @@ export async function listArticles(req: Request, res: Response) {
     const feedProfile = req.query.feed_profile as string || '';
     const searchTerm = req.query.search as string || '';
     const preset = req.query.preset as string || '';
+    const category = req.query.category as string || '';
 
     let startDate = req.query.start_date as string || '';
     let endDate = req.query.end_date as string || '';
@@ -25,12 +26,14 @@ export async function listArticles(req: Request, res: Response) {
     }
 
     const availableProfiles = await getDistinctFeedProfiles('articles');
+    const availableCategories = await getDistinctCategories();
 
     const totalArticles = await countTotalArticles({
       feedProfile: feedProfile || undefined,
       searchTerm: searchTerm || undefined,
       startDate: startDate || undefined,
-      endDate: endDate || undefined
+      endDate: endDate || undefined,
+      category: category || undefined
     });
 
     const totalPages = Math.ceil(totalArticles / perPage);
@@ -43,7 +46,8 @@ export async function listArticles(req: Request, res: Response) {
       feedProfile: feedProfile || undefined,
       searchTerm: searchTerm || undefined,
       startDate: startDate || undefined,
-      endDate: endDate || undefined
+      endDate: endDate || undefined,
+      category: category || undefined
     });
 
     // Prepare articles with HTML content
@@ -65,8 +69,10 @@ export async function listArticles(req: Request, res: Response) {
         start_date: startDate,
         end_date: endDate,
         preset: preset,
+        category: category,
       },
-      available_profiles: availableProfiles
+      available_profiles: availableProfiles,
+      available_categories: availableCategories
     });
   } catch (error) {
     console.error('Error loading articles:', error);

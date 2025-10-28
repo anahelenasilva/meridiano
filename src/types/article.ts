@@ -10,6 +10,7 @@ export interface PaginatedArticleInput {
   searchTerm?: string;
   startDate?: string;
   endDate?: string;
+  category?: string;
 }
 
 export interface CountTotalArticlesInput {
@@ -17,6 +18,7 @@ export interface CountTotalArticlesInput {
   searchTerm?: string;
   startDate?: string;
   endDate?: string;
+  category?: string;
 }
 
 export interface ArticleSummary {

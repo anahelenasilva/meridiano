@@ -52,8 +52,10 @@ export interface ArticlesResponse {
     start_date: string;
     end_date: string;
     preset: string;
+    category: string;
   };
   available_profiles: string[];
+  available_categories: string[];
 }
 
 export interface BriefingsResponse {

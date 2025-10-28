@@ -25,6 +25,7 @@ export const apiService = {
     start_date?: string;
     end_date?: string;
     preset?: string;
+    category?: string;
   }) => {
     const searchParams = new URLSearchParams();
     if (params) {

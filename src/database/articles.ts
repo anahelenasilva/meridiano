@@ -440,7 +440,8 @@ export function getArticlesPaginated(options: PaginatedArticleInput): Promise<DB
       feedProfile,
       searchTerm,
       startDate,
-      endDate
+      endDate,
+      category
     } = options;
 
     let query = `
@@ -472,6 +473,11 @@ export function getArticlesPaginated(options: PaginatedArticleInput): Promise<DB
     if (endDate) {
       query += ' AND DATE(published_date) <= ?';
       params.push(endDate);
+    }
+
+    if (category) {
+      query += ' AND categories LIKE ?';
+      params.push(`%"${category}"%`);
     }
 
     const validSortColumns = ['published_date', 'title', 'impact_rating', 'created_at'];
@@ -506,7 +512,7 @@ export function countTotalArticles(options: CountTotalArticlesInput): Promise<nu
       return;
     }
 
-    const { feedProfile, searchTerm, startDate, endDate } = options;
+    const { feedProfile, searchTerm, startDate, endDate, category } = options;
 
     let query = 'SELECT COUNT(*) as count FROM articles WHERE 1=1';
     const params: any[] = [];
@@ -530,6 +536,11 @@ export function countTotalArticles(options: CountTotalArticlesInput): Promise<nu
     if (endDate) {
       query += ' AND DATE(published_date) <= ?';
       params.push(endDate);
+    }
+
+    if (category) {
+      query += ' AND categories LIKE ?';
+      params.push(`%"${category}"%`);
     }
 
     db.get(query, params, (err, row: any) => {
@@ -624,5 +635,48 @@ export async function getArticlesByFilter(whereClause: string, params: any[], ba
         }
       }
     );
+  });
+}
+
+export function getDistinctCategories(): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not initialized'));
+      return;
+    }
+
+    const query = `
+      SELECT DISTINCT categories
+      FROM articles
+      WHERE categories IS NOT NULL AND categories != ''
+    `;
+
+    db.all(query, [], (err, rows: any[]) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      const categoriesSet = new Set<string>();
+
+      rows.forEach(row => {
+        if (row.categories) {
+          try {
+            const categories = JSON.parse(row.categories);
+            if (Array.isArray(categories)) {
+              categories.forEach(category => {
+                if (typeof category === 'string') {
+                  categoriesSet.add(category);
+                }
+              });
+            }
+          } catch (e) {
+            // Skip invalid JSON
+          }
+        }
+      });
+
+      resolve(Array.from(categoriesSet).sort());
+    });
   });
 }

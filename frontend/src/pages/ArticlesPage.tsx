@@ -19,6 +19,7 @@ const ArticlesPage = () => {
     start_date: searchParams.get('start_date') || '',
     end_date: searchParams.get('end_date') || '',
     preset: searchParams.get('preset') || '',
+    category: searchParams.get('category') || '',
   });
 
   // Local search input state for debouncing
@@ -98,10 +99,11 @@ const ArticlesPage = () => {
     );
   }
 
-  const { articles, pagination, available_profiles } = data || {
+  const { articles, pagination, available_profiles, available_categories } = data || {
     articles: [],
     pagination: { page: 1, per_page: 20, total_pages: 0, total_articles: 0 },
-    available_profiles: []
+    available_profiles: [],
+    available_categories: []
   };
 
   return (
@@ -116,6 +118,11 @@ const ArticlesPage = () => {
                 {filters.feed_profile}
               </span>
             )}
+            {filters.category && (
+              <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                {filters.category}
+              </span>
+            )}
           </h1>
           {pagination.total_articles > 0 && (
             <p className="text-gray-600">
@@ -128,7 +135,7 @@ const ArticlesPage = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
         {/* Search and Profile */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -156,6 +163,20 @@ const ArticlesPage = () => {
               {available_profiles.map((profile) => (
                 <option key={profile} value={profile}>
                   {profile}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <select
+              value={filters.category}
+              onChange={(e) => updateFilter('category', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Categories</option>
+              {available_categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
                 </option>
               ))}
             </select>
