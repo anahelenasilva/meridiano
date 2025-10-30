@@ -34,14 +34,14 @@ export const techRSSFeeds: RSSFeed[] = [
     name: "Ars Technica",
     category: "technical",
     description: "In-depth technology analysis and science",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://krebsonsecurity.com/feed/",
     name: "Krebs on Security",
     category: "cybersecurity",
     description: "Cybersecurity news and investigative reporting",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://feeds.feedburner.com/TheHackersNews",
@@ -55,14 +55,14 @@ export const techRSSFeeds: RSSFeed[] = [
     name: "BleepingComputer",
     category: "cybersecurity",
     description: "Computer security and malware news",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://www.tomshardware.com/feeds/all",
     name: "Tom's Hardware",
     category: "hardware",
     description: "Computer hardware reviews and news",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://www.scmp.com/rss/36/feed",
@@ -104,7 +104,7 @@ export const techRSSFeeds: RSSFeed[] = [
     name: "SCMP Innovation",
     category: "innovation",
     description: "SCMP - Innovation",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://www.wired.com/feed/category/backchannel/latest/rss",
