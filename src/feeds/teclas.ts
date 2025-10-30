@@ -1,46 +1,25 @@
-/*
-"https://feeds.folha.uol.com.br/emcimadahora/rss091.xml",  # Folha de S.Paulo
-"https://agenciabrasil.ebc.com.br/rss/politica.xml",  # Agência Brasil
-"https://reporterbrasil.org.br/feed-rss/",  # Repórter Brasil
-"https://apublica.org/feed/", # Agencia Pública
-"https://elpais.com/tag/rss/brasil/",  # El País Brasil
-"https://rss.app/feeds/HSToR6aoxLq2IUTt.xml", # Alma Preta
-"https://www.nexojornal.com.br/rss.xml",  # Nexo Jornal
-"https://outraspalavras.net/feed/", # Outras Palavras
-"https://jacobin.com.br/feed/", # Jacobin Brasil
-"https://revistaforum.com.br/rss/feed.html", # Revista Fórum
-"https://operamundi.uol.com.br/feed/", # Opera Mundi
-*/
-
 import { FeedConfiguration, RSSFeed } from '../types/feed';
 
-export const brasilRSSFeeds: RSSFeed[] = [
+export const teclasRSSFeeds: RSSFeed[] = [
   {
-    url: "https://www.brasildefato.com.br/rss",
-    name: "Brasil de Fato",
-    category: "news",
-    description: "Independent news from Brazil",
+    url: "https://www.tecnologiaeclasse.com.br/feed",
+    name: "Teclas",
+    category: "blog",
+    description: "TeClas é um canal (e agora também uma newsletter) sobre tecnologia e luta de classes.",
     enabled: true,
   },
   {
-    url: "https://www.intercept.com.br/feed/",
-    name: "Intercept",
+    url: "https://teclas.soberana.tv/rss.xml",
+    name: "Roteiros Tecnologia e Classe",
     category: "news",
-    description: "Investigative journalism in Brazil",
-    enabled: true,
-  },
-  {
-    url: "https://averdade.org.br/feed/",
-    name: "A Verdade",
-    category: "news",
-    description: "Left-wing news and analysis from Brazil",
+    description: "eed dos roteiros de vídeos do canal Tecnologia e Classe",
     enabled: true,
   },
 ];
 
 const pt_br = " Responda em português brasileiro.";
 
-export const brasilPrompts = {
+export const teclasPrompts = {
   articleSummary: `Resuma os pontos principais desta notícia objetivamente em 2 a 4 frases. Identifique os principais tópicos abordados.
 
 Artigo:
@@ -92,23 +71,30 @@ Qual é o evento ou tópico principal discutido? Resuma os principais desenvolvi
 """.${pt_br}`,
 };
 
-export const brasilFeedConfig: FeedConfiguration = {
-  profile: 'brasil',
-  rssFeeds: brasilRSSFeeds,
-  prompts: brasilPrompts,
+export const teclasFeedConfig: FeedConfiguration = {
+  profile: 'teclas',
+  rssFeeds: teclasRSSFeeds,
+  prompts: teclasPrompts,
   settings: {
-    priority: 3,
+    priority: 2,
     enabled: true,
   },
 };
 
-export const getEnabledFeeds = (): RSSFeed[] => {
-  return brasilRSSFeeds.filter(feed => feed.enabled !== false);
+// Export individual parts for convenience
+export { teclasPrompts as prompts, teclasRSSFeeds as rssFeeds };
+
+const getFeedsByCategory = (category: string): RSSFeed[] => {
+  return teclasRSSFeeds.filter(feed => feed.category === category);
+};
+
+const getEnabledFeeds = (): RSSFeed[] => {
+  return teclasRSSFeeds.filter(feed => feed.enabled !== false);
 };
 
 const getFeedCategories = (): string[] => {
   const categories = new Set(
-    brasilRSSFeeds
+    teclasRSSFeeds
       .map(feed => feed.category)
       .filter((category): category is string => category !== undefined)
   );
@@ -116,12 +102,8 @@ const getFeedCategories = (): string[] => {
   return Array.from(categories);
 };
 
-const getFeedsByCategory = (category: string): RSSFeed[] => {
-  return brasilRSSFeeds.filter(feed => feed.category === category);
-};
-
-export const getBrasilFeedStats = () => {
-  const totalFeeds = brasilRSSFeeds.length;
+export const getTeclasFeedStats = () => {
+  const totalFeeds = teclasRSSFeeds.length;
   const enabledFeeds = getEnabledFeeds().length;
   const categories = getFeedCategories();
 

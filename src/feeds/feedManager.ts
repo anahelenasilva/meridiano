@@ -1,6 +1,7 @@
 import { FeedConfiguration, FeedProfile, RSSFeed } from '../types/feed';
 import { brasilFeedConfig } from './brasil';
 import { techFeedConfig } from './tech';
+import { teclasFeedConfig } from './teclas';
 
 export class FeedManager {
   private static instance: FeedManager;
@@ -9,6 +10,7 @@ export class FeedManager {
   private constructor() {
     this.registerFeedConfig(techFeedConfig);
     this.registerFeedConfig(brasilFeedConfig);
+    this.registerFeedConfig(teclasFeedConfig);
   }
 
   public static getInstance(): FeedManager {
