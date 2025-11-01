@@ -130,7 +130,7 @@ export const techRSSFeeds: RSSFeed[] = [
 ];
 
 export const techPrompts = {
-  articleSummary: `Summarize the key points of this news article objectively in 2-4 sentences. Identify the main topics covered.
+  articleSummary: `Summarize the key points of this news article objectively in 2-4 sentences. Identify the main topics covered. Do not include any promotional articles or calls to action.
 
 Article:
 {article_content}`,
