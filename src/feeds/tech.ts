@@ -23,6 +23,13 @@ export const techRSSFeeds: RSSFeed[] = [
     enabled: true,
   },
   {
+    url: "https://leaddev.com/feed",
+    name: "LeadDev",
+    category: "technical",
+    description: "Hosts thousands of free articles and videos that can help you improve your performance and that of your entire engineering org.",
+    enabled: true,
+  },
+  {
     url: "https://www.theverge.com/rss/index.xml",
     name: "The Verge",
     category: "consumer-tech",
@@ -111,7 +118,7 @@ export const techRSSFeeds: RSSFeed[] = [
     name: "WIRED Backchannel",
     category: "culture",
     description: "WIRED - Technology and Culture",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://www.wired.com/feed/rss",
