@@ -143,11 +143,11 @@ Rate the impact on a scale of 1 to 10, using these guidelines:
 
 3-4: Regionally notable. Pop culture happenings, local events, or community-focused stories. Example: A local mayor's resignation or a regional festival.
 
-5-6: Regionally significant or moderately global. Affects multiple communities or industries. Example: A nationwide strike or a major company bankruptcy.
+5-6: Regionally significant or moderately global. Affects multiple communities or industries. Example: A nationwide strike or a major company bankruptcy. Also includes minor updates to popular programming languages or frameworks, especially Typescript, Javascript and NodeJs that have limited impact on the developer community.
 
-7-8: Highly significant. Major international relevance, significant disruptions, or wide-reaching implications. Example: A large-scale natural disaster, global health alerts, or a major geopolitical shift.
+7-8: Highly significant. Major international relevance, significant disruptions, or wide-reaching implications. Example: A large-scale natural disaster, global health alerts, or a major geopolitical shift. Also includes articles about Typescript or JavaScript frameworks updates that have substantial implications for the developer community. Also includes significant changes in NodeJs that impact a wide range of applications and services.
 
-9-10: Extraordinary and historic. Global, severe, and long-lasting implications. Example: Declaration of war, groundbreaking global treaties, or critical climate crises.
+9-10: Extraordinary and historic. Global, severe, and long-lasting implications. Example: Declaration of war, groundbreaking global treaties, or critical climate crises. Also, major technological breakthroughs that redefine industries or human capabilities. Also includes events that fundamentally alter societal structures or global governance.
 
 Key Reminder: Scores of 9-10 should be exceedingly rare and reserved for world-defining events. Always err on the side of a lower score unless the impact is undeniably significant.
 

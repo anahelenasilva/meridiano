@@ -133,7 +133,7 @@ Analyzed News Clusters (Most significant first):
     databaseFile: "meridian.db",
 
     // Maximum number of articles to fetch per feed for processing
-    maxArticlesForScrapping: 30,
+    maxArticlesForScrapping: 50,
   },
 };
 
