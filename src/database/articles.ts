@@ -273,6 +273,26 @@ export function deleteArticles(): Promise<void> {
   });
 }
 
+export function deleteArticleById(articleId: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not initialized'));
+      return;
+    }
+    const stmt = db.prepare(`DELETE FROM articles WHERE id = ?`);
+
+    stmt.run([articleId], function (err) {
+      if (err) {
+        console.error("Error deleting article:", err);
+        reject(err);
+      } else {
+        resolve();
+      }
+      stmt.finalize();
+    });
+  });
+}
+
 export function getTotalArticleCount(options: {
   startDate?: Date;
   endDate?: Date;

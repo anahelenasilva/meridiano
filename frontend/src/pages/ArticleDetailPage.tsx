@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, ExternalLink, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, ExternalLink, Tag, TrashIcon } from 'lucide-react';
 import moment from 'moment';
 import { Link, useParams } from 'react-router-dom';
 
@@ -18,6 +18,15 @@ const ArticleDetailPage = () => {
     },
     enabled: !isNaN(articleId),
   });
+
+  const deleteArticle = async () => {
+    // Implement article deletion logic here
+    await apiService.deleteArticle(articleId)
+    alert('Article deleted successfully');
+
+    // Redirect to articles list after deletion
+    window.location.href = '/articles';
+  };
 
   if (isLoading) {
     return (
@@ -111,16 +120,29 @@ const ArticleDetailPage = () => {
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
-            <a
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              <ExternalLink className="h-5 w-5" />
-              <span>Read Original Article</span>
-            </a>
+          <div className="flex items-center justify-between space-x-4">
+            <div>
+              <a
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <ExternalLink className="h-5 w-5" />
+                <span>Read Original Article</span>
+              </a>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                onClick={deleteArticle}
+                className="inline-flex size items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                <TrashIcon className="h-5 w-5" />
+                <span>Delete Article</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

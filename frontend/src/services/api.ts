@@ -39,6 +39,9 @@ export const apiService = {
   getArticle: (id: number) =>
     api.get(`/articles/${id}`),
 
+  deleteArticle: (id: number) =>
+    api.delete(`/articles/${id}`),
+
   getProfiles: () =>
     api.get('/profiles'),
 

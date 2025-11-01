@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { deleteArticle } from './usecases/articles/deleteArticle';
 import { getArticle } from './usecases/articles/getArticleById';
 import { listArticles } from './usecases/articles/listArticles';
 import { getBriefingById } from './usecases/briefings/getBriefingById';
@@ -15,6 +16,8 @@ router.get('/api/briefings/:briefId', getBriefingById);
 router.get('/api/articles', listArticles);
 
 router.get('/api/articles/:articleId', getArticle);
+
+router.delete('/api/articles/:articleId', deleteArticle);
 
 router.get('/api/profiles', getAvailableProfiles);
 
