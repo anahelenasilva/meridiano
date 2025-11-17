@@ -125,7 +125,7 @@ export const techRSSFeeds: RSSFeed[] = [
     name: "WIRED",
     category: "tech-culture",
     description: "Technology, science, and digital culture",
-    enabled: true,
+    enabled: false,
   },
 ];
 
