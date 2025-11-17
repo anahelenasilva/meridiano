@@ -171,9 +171,13 @@ export async function scrapeArticles(
         const publishedDate = entry.pubDate ? new Date(entry.pubDate) : new Date();
         const feedSource = feed.title || feedUrl;
 
-        if (!url) continue;
+        if (!url) {
+          // console.log(`  Skipping entry with missing URL: ${title}`);
+          continue;
+        }
 
         if (await articleExists(url)) {
+          // console.log(`  Skipping entry with existing URL: ${title}`);
           continue;
         }
 
