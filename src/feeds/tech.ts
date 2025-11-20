@@ -127,6 +127,13 @@ export const techRSSFeeds: RSSFeed[] = [
     description: "Technology, science, and digital culture",
     enabled: false,
   },
+  {
+    url: "https://raw.githubusercontent.com/theworkitem/feeds/master/xml/theworkitem-itunes.xml",
+    name: "The Work Item Podcast",
+    category: "tech-culture",
+    description: "Podcast on Real Talk on Tech's Toughest Career Choices",
+    enabled: true,
+  },
 ];
 
 export const techPrompts = {
