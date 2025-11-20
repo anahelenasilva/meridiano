@@ -220,3 +220,9 @@ In short, if you modify and distribute this software, or run a modified version 
 
 You can find the full license text here:
 [https://www.gnu.org/licenses/agpl-3.0.html](https://www.gnu.org/licenses/agpl-3.0.html)
+
+# Next steps
+- [ ] Add articles manually
+- [ ] Star/bookmark an article
+- [ ] See stars/bookmarks in a special view
+- [ ] See starred articles in the briefing
