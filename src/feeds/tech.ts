@@ -134,6 +134,13 @@ export const techRSSFeeds: RSSFeed[] = [
     description: "Podcast on Real Talk on Tech's Toughest Career Choices",
     enabled: true,
   },
+  {
+    url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCbRP3c757lWg9M-U7TyEkXA",
+    name: "Theo Browne's YouTube Channel",
+    category: "tech",
+    description: "Theo is a software dev, AI nerd, TypeScript sympathizer, creator of T3 Chat and the T3 Stack.",
+    enabled: false,
+  },
 ];
 
 export const techPrompts = {
