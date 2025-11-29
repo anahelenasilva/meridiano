@@ -34,7 +34,7 @@ export const techRSSFeeds: RSSFeed[] = [
     name: "The Verge",
     category: "consumer-tech",
     description: "Consumer technology and culture",
-    enabled: true,
+    enabled: false,
   },
   {
     url: "https://arstechnica.com/feed/",
