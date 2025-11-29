@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, ExternalLink, Eye, Search } from 'lucide-react';
+import { Calendar, ExternalLink, Eye, Search, TrashIcon } from 'lucide-react';
 import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -75,6 +75,15 @@ const ArticlesPage = () => {
     updateFilter('preset', preset);
     // Clear individual date filters when using preset
     setFilters(prev => ({ ...prev, start_date: '', end_date: '', preset }));
+  };
+
+  const deleteArticle = async (articleId: number) => {
+    // Implement article deletion logic here
+    await apiService.deleteArticle(articleId)
+    alert('Article deleted successfully');
+
+    // Redirect to articles list after deletion
+    window.location.href = '/articles';
   };
 
   if (isLoading) {
@@ -322,6 +331,14 @@ const ArticlesPage = () => {
                     <ExternalLink className="h-4 w-4" />
                     <span>Original</span>
                   </a>
+                  <button
+                    type="button"
+                    onClick={() => deleteArticle(article.id)}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm border rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
             </div>
