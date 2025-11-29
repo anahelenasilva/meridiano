@@ -20,7 +20,6 @@ const ArticleDetailPage = () => {
   });
 
   const deleteArticle = async () => {
-    // Implement article deletion logic here
     await apiService.deleteArticle(articleId)
     alert('Article deleted successfully');
 
